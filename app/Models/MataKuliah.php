@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MataKuliah extends Model
 {
     protected $fillable = [
+        'dosen_id',
         'kode_matakuliah',
         'nama_matakuliah',
         'sks',
@@ -15,6 +17,11 @@ class MataKuliah extends Model
         'bobot_uts',
         'bobot_uas',
     ];
+
+    public function dosen(): BelongsTo
+    {
+        return $this->belongsTo(Dosen::class, 'dosen_id');
+    }
 
     public function nilais(): HasMany
     {

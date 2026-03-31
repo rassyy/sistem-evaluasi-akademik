@@ -1,0 +1,18 @@
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: #f4f6f9;
+}
+
+:root {
+    --primary: #4f46e5;
+}
+
+.badge-A   { background: #198754; color: #fff; }
+.badge-Bp  { background: #20c997; color: #fff; }
+.badge-B   { background: #0dcaf0; color: #fff; }
+.badge-Cp  { background: #ffc107; color: #000; }
+.badge-C   { background: #fd7e14; color: #fff; }
+.badge-D   { background: #dc3545; color: #fff; }
+.badge-E   { background: #6c757d; color: #fff; }

@@ -17,6 +17,12 @@ class NilaiController extends Controller
     {
         $query = Nilai::with(['mataKuliah', 'mahasiswa', 'nilaiTugas']);
 
+        if (auth()->user()->isDosen()) {
+            $dosenId = auth()->user()->dosen?->id;
+            $query->whereHas('mataKuliah', function ($q) use ($dosenId) {
+                $q->where('dosen_id', $dosenId);
+            });
+        }
         // Filter
         if ($request->filled('mata_kuliah_id')) {
             $query->where('mata_kuliah_id', $request->mata_kuliah_id);
@@ -40,9 +46,15 @@ class NilaiController extends Controller
         return view('nilai.index', compact('nilais', 'mataKuliahs'));
     }
 
+    // Dalam create() — filter matkul hanya yang diampunya
     public function create()
     {
-        $mataKuliahs = MataKuliah::all();
+        $user = auth()->user();
+
+        $mataKuliahs = $user->isDosen()
+            ? MataKuliah::where('dosen_id', $user->dosen?->id)->get()
+            : MataKuliah::all();
+
         $mahasiswas = Mahasiswa::all();
         return view('nilai.create', compact('mataKuliahs', 'mahasiswas'));
     }
