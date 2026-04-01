@@ -7,47 +7,71 @@ use App\Http\Controllers\MataKuliahController;
 use App\Http\Controllers\NilaiController;
 use Illuminate\Support\Facades\Route;
 
-
-// ── Redirect root berdasarkan role ─────────────────────────────────
+/*
+|--------------------------------------------------------------------------
+| ROOT — redirect berdasarkan role setelah login
+|--------------------------------------------------------------------------
+*/
 Route::get('/', function () {
-    if (!auth()->check())
+    if (!auth()->check()) {
         return redirect()->route('login');
+    }
 
     return match (auth()->user()->role) {
         'admin' => redirect()->route('nilai.index'),
         'dosen' => redirect()->route('nilai.index'),
-        'mahasiswa' => redirect()->route('khs.index'),
+        'mahasiswa' => redirect()->route('mahasiswa.dashboard'),
         default => redirect()->route('login'),
     };
 })->middleware('auth');
 
-// ── Routes Breeze (login, register, dll) ───────────────────────────
+/*
+|--------------------------------------------------------------------------
+| Breeze auth routes (login, logout, register, password reset, dll)
+|--------------------------------------------------------------------------
+*/
 require __DIR__ . '/auth.php';
 
-// ── Admin only ─────────────────────────────────────────────────────
+/*
+|--------------------------------------------------------------------------
+| ADMIN ONLY
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth', 'role:admin'])->group(function () {
 
     // Master Dosen
     Route::resource('dosen', DosenController::class)->except(['show']);
 
-    // Master Mahasiswa (CRUD + Import)
+    // Master Mahasiswa — CRUD + Import
     Route::resource('mahasiswa', MahasiswaController::class)->except(['show']);
     Route::get('mahasiswa-import', [MahasiswaController::class, 'importForm'])->name('mahasiswa.import.form');
     Route::post('mahasiswa-import', [MahasiswaController::class, 'import'])->name('mahasiswa.import');
 
-    // Master Mata Kuliah — hanya admin yang bisa CRUD penuh
+    // Master Mata Kuliah
     Route::resource('mata-kuliah', MataKuliahController::class)->except(['show']);
 });
 
-// ── Admin & Dosen ───────────────────────────────────────────────────
+/*
+|--------------------------------------------------------------------------
+| ADMIN + DOSEN
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth', 'role:admin,dosen'])->group(function () {
 
-    // Nilai (CRUD + export)
+    // Nilai — CRUD + Export
     Route::resource('nilai', NilaiController::class);
     Route::get('nilai-export', [NilaiController::class, 'export'])->name('nilai.export');
 });
 
-// ── Mahasiswa only ─────────────────────────────────────────────────
+/*
+|--------------------------------------------------------------------------
+| MAHASISWA ONLY — Dashboard / KHS
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth', 'role:mahasiswa'])->group(function () {
+
+    Route::get('dashboard', [KhsController::class, 'index'])->name('mahasiswa.dashboard');
+
+    // Alias /khs → sama dengan dashboard (opsional, untuk backward compat)
     Route::get('khs', [KhsController::class, 'index'])->name('khs.index');
 });
